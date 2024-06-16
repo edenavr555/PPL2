@@ -327,7 +327,8 @@ const unparseProcExp = (pe: ProcExp): string =>
     `(lambda (${map((p: VarDecl) => p.var, pe.args).join(" ")}) ${unparseLExps(pe.body)})`
 
 const unparseLetExp = (le: LetExp) : string => 
-    `(let (${map((b: Binding) => `(${b.var.var} ${unparseL3(b.val)})`, le.bindings).join(" ")}) ${unparseLExps(le.body)})`
+    `(let (${map((b: Binding) => `(${b.var.var} ${unparseL3(b.val)})`,
+le.bindings).join(" ")}) ${unparseLExps(le.body)})`
 
 export const unparseClassExp = (ce: ClassExp): string =>
     `(class (${map((v: VarDecl) => `${v.var}`, ce.fields).join(" ")}) (${map((b: Binding) => `(${b.var.var} ${unparseL3(b.val)})`, ce.methods).join(" ")})`
