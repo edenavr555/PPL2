@@ -8,7 +8,7 @@ import { isAppExp, isBoolExp, isDefineExp, isIfExp, isLitExp, isNumExp,
 import { makeBoolExp, makeLitExp, makeNumExp, makeProcExp, makeStrExp, makeBinding} from "./L3-ast";
 import { parseL3Exp } from "./L3-ast";
 import { applyEnv, makeEmptyEnv, makeEnv, Env } from "./L3-env-sub";
-import { isClosure, makeClosure, Closure, Value, ClassVal, makeClassVal, isClassVal , makeObject, isObjectVal} from "./L3-value";
+import { isClosure, makeClosure, Closure, Value, ClassVal, makeClassVal, isClassVal , isObjectVal} from "./L3-value"; //add makeObjst
 import { first, rest, isEmpty, List, isNonEmptyList } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure, bind, mapResult, mapv } from "../shared/result";
@@ -57,8 +57,8 @@ const evalClass = (exp: ClassExp, env: Env): Result<ClassVal> =>
 const L3applyProcedure = (proc: Value, args: Value[], env: Env): Result<Value> =>
     isPrimOp(proc) ? applyPrimitive(proc, args) :
     isClosure(proc) ? applyClosure(proc, args, env) :
-    isClassVal(proc) ? applyClassVal(proc, args, env) :
-    isObjectVal(proc) ? applyObject(proc, args, env) :
+   // isClassVal(proc) ? applyClassVal(proc, args, env) :
+  //  isObjectVal(proc) ? applyObject(proc, args, env) :
     makeFailure(`Bad procedure ${format(proc)}`);
 
 // Applications are computed by substituting computed
@@ -82,9 +82,9 @@ const applyClosure = (proc: Closure, args: Value[], env: Env): Result<Value> => 
     //return evalSequence(substitute(proc.body, vars, litArgs), env);
 }
 
-const applyClassVal = (proc: ClassVal, args: Value[], env: Env): Result<Object> => {
-    return makeObject(proc, args, env);
-}
+//const applyClassVal = (proc: ClassVal, args: Value[], env: Env): Result<Object> => {
+  //  return makeObject(proc, args, env);
+//}
 
 
 
@@ -105,8 +105,12 @@ const evalCExps = (first: Exp, rest: Exp[], env: Env): Result<Value> =>
 // Compute the rhs of the define, extend the env with the new binding
 // then compute the rest of the exps in the new env.
 const evalDefineExps = (def: Exp, exps: Exp[], env: Env): Result<Value> =>
-    isDefineExp(def) ? bind(
-    makeFailure(`Unexpected in evalDefine: ${format(def)}`);
+    isDefineExp(def) ? bind(L3applicativeEval(def.val, env), 
+(rhs: Value) => 
+    evalSequence(exps, 
+        makeEnv(def.var.var, rhs, env))) :
+makeFailure(`Unexpected in evalDefine: ${format(def)}`);
+
 
 // Main program
 export const evalL3program = (program: Program): Result<Value> =>

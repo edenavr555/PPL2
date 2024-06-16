@@ -50,12 +50,12 @@ export const isClassVal = (x: any): x is ClassVal => x.tag === "Class";
 export const isObjectVal = (x: any): x is Object => x.tag === "Object";
 
 
-export const makeObjectEnv = (class: ClassVal, values: Value[], env: Env): Object =>
-    ({tag: "Object", class: class, values: values, env: env});
+//export const makeObjectEnv = (class: ClassVal, values: Value[], env: Env): Object =>
+  //  ({tag: "Object", class: class, values: values, env: env});
 
 
-export const makeObject = (class: ClassVal, values: Value[]): Object =>
-    ({tag: "Object", class: class, values: values, env: makeEmptyEnv()});
+//export const makeObject = (class: ClassVal, values: Value[]): Object =>
+  //  ({tag: "Object", class: class, values: values, env: makeEmptyEnv()});
 
 export const makeClassEvn = (fields: VarDecl[], methods: Binding[], env: Env): ClassVal =>
     ({tag: "Class", fields: fields, methods: methods, env: env});
