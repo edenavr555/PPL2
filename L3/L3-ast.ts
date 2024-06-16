@@ -182,7 +182,7 @@ export const parseL3SpecialForm = (op: Sexp, params: Sexp[]): Result<CExp> =>
         isNonEmptyList<Sexp>(params) ? parseLitExp(first(params)) :
         makeFailure(`Bad quote exp: ${params}`) :
     op === "class" ? 
-        isNonEmptyList<Sexp>(params) ? parseClassExp(first(params), rest(params)) :
+        isNonEmptyList<Sexp>(params) ? parseClassExp(params[0], params[1]) :
         makeFailure(`Bad quote exp: ${params}`) :
     makeFailure("Never");
 
@@ -235,11 +235,11 @@ const parseAppExp = (op: Sexp, params: Sexp[]): Result<AppExp> =>
 
 
 
-export const parseClassExp = (fields: Sexp, methods: Sexp[]): Result<ClassExp> => 
+export const parseClassExp = (fields: Sexp, methods: Sexp): Result<ClassExp> => 
     isArray(fields) && allT(isString, fields) && isGoodBindings(methods) ? 
-    mapv(
+    mapv( 
         mapv(mapResult(parseL3CExp, map(second, methods)), 
-    (vals: CExp[]) => zipWith(makeBinding, map(b => b[0], methods) as string[], vals)), 
+    (vals: CExp[]) => zipWith(makeBinding, map(first, methods) as string[], vals)), 
     (bindings: Binding[]): ClassExp => 
         makeClassExp(map(makeVarDecl, fields), bindings)) :
 makeFailure(`Invalid vars for ProcExp ${format(fields)}`);
@@ -331,7 +331,7 @@ const unparseLetExp = (le: LetExp) : string =>
 le.bindings).join(" ")}) ${unparseLExps(le.body)})`
 
 export const unparseClassExp = (ce: ClassExp): string =>
-    `(class (${map((v: VarDecl) => `${v.var}`, ce.fields).join(" ")}) (${map((b: Binding) => `(${b.var.var} ${unparseL3(b.val)})`, ce.methods).join(" ")})`
+    `(class (${map((v: VarDecl) => `${v.var}`, ce.fields).join(" ")}) (${map((b: Binding) => `(${b.var.var} ${unparseL3(b.val)})`, ce.methods).join(" ")}))`
 
 export const unparseL3 = (exp: Program | Exp): string =>
     isBoolExp(exp) ? valueToString(exp.val) :
