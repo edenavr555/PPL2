@@ -12,7 +12,7 @@ export const class2proc = (exp: ClassExp): ProcExp => {
 }
 
 export const makeIfChain = (bindings: Binding[], msg: VarDecl): ProcExp => {
-    makeIfExp(, 
+    makeIfExp(), 
 
 }
 
