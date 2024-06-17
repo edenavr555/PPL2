@@ -1,14 +1,14 @@
 // L3-eval.ts
-import { map, zipWith } from "ramda";
+import { map, zipWith, reduce } from "ramda";
 import { ClassExp, isCExp, isClassExp, isLetExp, makeClassExp } from "./L3-ast";
 import { BoolExp, CExp, Exp, IfExp, LitExp, NumExp,
          PrimOp, ProcExp, Program, StrExp, VarDecl } from "./L3-ast";
 import { isAppExp, isBoolExp, isDefineExp, isIfExp, isLitExp, isNumExp,
-             isPrimOp, isProcExp, isStrExp, isVarRef } from "./L3-ast";
+             isPrimOp, isProcExp, isStrExp, isVarRef, isBinding } from "./L3-ast";
 import { makeBoolExp, makeLitExp, makeNumExp, makeProcExp, makeStrExp, makeBinding} from "./L3-ast";
 import { parseL3Exp } from "./L3-ast";
 import { applyEnv, makeEmptyEnv, makeEnv, Env } from "./L3-env-sub";
-import { isClosure, makeClosure, Closure, Value, ClassVal, makeClassVal, isClassVal , isObjectVal} from "./L3-value"; //add makeObjst
+import { isClosure, makeClosure, Closure, Value, ClassVal, makeClassVal, isClassVal , Object, isObjectVal, makeObject, isSymbolSExp} from "./L3-value"; 
 import { first, rest, isEmpty, List, isNonEmptyList } from '../shared/list';
 import { isBoolean, isNumber, isString } from "../shared/type-predicates";
 import { Result, makeOk, makeFailure, bind, mapResult, mapv } from "../shared/result";
@@ -17,6 +17,7 @@ import { applyPrimitive } from "./evalPrimitive";
 import { parse as p } from "../shared/parser";
 import { Sexp } from "s-expression";
 import { format } from "../shared/format";
+import { ExtEnv } from "./L3-env-env";
 
 // ========================================================
 // Eval functions
@@ -57,8 +58,8 @@ const evalClass = (exp: ClassExp, env: Env): Result<ClassVal> =>
 const L3applyProcedure = (proc: Value, args: Value[], env: Env): Result<Value> =>
     isPrimOp(proc) ? applyPrimitive(proc, args) :
     isClosure(proc) ? applyClosure(proc, args, env) :
-   // isClassVal(proc) ? applyClassVal(proc, args, env) :
-  //  isObjectVal(proc) ? applyObject(proc, args, env) :
+    isClassVal(proc) ? applyClassVal(proc, args) :
+    isObjectVal(proc) ? applyObject(proc, args, env) :
     makeFailure(`Bad procedure ${format(proc)}`);
 
 // Applications are computed by substituting computed
@@ -82,9 +83,30 @@ const applyClosure = (proc: Closure, args: Value[], env: Env): Result<Value> => 
     //return evalSequence(substitute(proc.body, vars, litArgs), env);
 }
 
-//const applyClassVal = (proc: ClassVal, args: Value[], env: Env): Result<Object> => {
-  //  return makeObject(proc, args, env);
-//}
+export const applyClassVal = (proc: ClassVal, args: Value[]): Result<Object> => {
+   return makeOk(makeObject(proc, args));
+}
+
+export const applyObject = (proc: Object, vals: Value[], env: Env): Result<Value> => {
+    const methodName = isSymbolSExp(vals[0]) ? vals[0].val : vals[0];
+    if(!isString(methodName)) {
+        return makeFailure("not valid.");
+    }
+    const method = proc.classVal.methods.find(b => b.var.var === methodName);
+    if(!method) {
+        return makeFailure(`Unrecognized method: ${methodName}`);
+    }
+    if(!isBinding(method)) {
+        return makeFailure("not valid.");
+    }
+    const methodProc = method.val;
+    if(!isProcExp(methodProc)) {
+        return makeFailure("not valid.");
+    }
+    return applyClosure(makeClosure(methodProc.args, methodProc.body), vals.slice(1),
+    proc.classVal.fields.reduce((accEnv, field, index) => makeEnv(field.var, proc.values[index], accEnv) ,env))
+}
+
 
 
 
