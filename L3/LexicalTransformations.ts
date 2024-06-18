@@ -6,15 +6,15 @@ Purpose: Transform ClassExp to ProcExp
 Signature: class2proc(classExp)
 Type: ClassExp => ProcExp
 */
-export const class2proc = (exp: ClassExp): ProcExp => {
-    const msg = makeVarDecl("msg");
-    makeProcExp(exp.fields, makeProcExp([msg], makeIfChain(exp.methods, msg)));
-}
+//export const class2proc = (exp: ClassExp): ProcExp => {
+  //  const msg = makeVarDecl("msg");
+    //makeProcExp(exp.fields, makeProcExp([msg], makeIfChain(exp.methods, msg)));
+//}
 
-export const makeIfChain = (bindings: Binding[], msg: VarDecl): ProcExp => {
-    makeIfExp(), 
+//export const makeIfChain = (bindings: Binding[], msg: VarDecl): ProcExp => {
+  //  makeIfExp(), 
 
-}
+//}
 
 
 /*
